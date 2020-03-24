@@ -86,15 +86,10 @@ namespace nDumbsterCore.smtp
 		/// </summary>
 		public const int DEFAULT_SMTP_PORT = 25;
 
-		/// <summary>
-		/// Stores the port that the SmtpServer listens to
-		/// </summary>
-		private int port = DEFAULT_SMTP_PORT;
-		
-		/// <summary>
+        /// <summary>
 		/// Stores all of the email received since this instance started up.
 		/// </summary>
-        private ConcurrentQueue<MailMessage> _receivedMail = new ConcurrentQueue<MailMessage>();
+        private readonly ConcurrentQueue<MailMessage> _receivedMail = new ConcurrentQueue<MailMessage>();
 		
 		/// <summary>
 		/// Indicates whether this server is stopped or not.
@@ -104,17 +99,17 @@ namespace nDumbsterCore.smtp
 		/// <summary>
 		/// Listen for client connection
 		/// </summary>
-		protected TcpListener TcpListener = null;
+		protected TcpListener TcpListener;
 
 		/// <summary>
 		/// Synchronization <see cref="AutoResetEvent">event</see> : Set when server has started (successfully or not)
 		/// </summary>
-		internal AutoResetEvent StartedEvent = null;
+		internal AutoResetEvent StartedEvent;
 
 		/// <summary>
 		/// Last <see cref="Exception">Exception</see> that happened in main loop thread
 		/// </summary>
-		internal Exception MainThreadException = null;
+		internal Exception MainThreadException;
 
 	    internal event EventHandler<EventArgs> HasStopped; 
 
@@ -126,8 +121,8 @@ namespace nDumbsterCore.smtp
 		/// </summary>
 		private SimpleSmtpServer(int port)
 		{
-			this.port = port;
-			this.StartedEvent = new AutoResetEvent(false);
+			Port = port;
+			StartedEvent = new AutoResetEvent(false);
 		}
 		#endregion // Constructors;
 
@@ -136,61 +131,38 @@ namespace nDumbsterCore.smtp
 		/// Indicates whether this server is stopped or not.
 		/// </summary>
 		/// <value><see langword="true"/> if the server is stopped</value>
-		virtual public bool Stopped
-		{
-			get
-			{
-				return _stopped;
-			}
-		}
-		
-		/// <summary>
+		public virtual bool Stopped => _stopped;
+
+        /// <summary>
 		/// The port that the SmtpServer listens to
 		/// </summary>
 		/// <value>Port used to accept client connections</value>
-		public int Port
-		{
-			get
-			{
-				return this.port;
-			}
-		}
+		public int Port { get; }
 
-		/// <summary>
+        /// <summary>
 		/// List of email received by this instance since start up.
 		/// </summary>
 		/// <value><see cref="Array">Array</see> holding received <see cref="SmtpMessage">SmtpMessage</see></value>
-        virtual public IEnumerable<MailMessage> ReceivedEmail
-		{
-			get
-			{
-                // This will return a snapshot of the contents of the queue
-                return _receivedMail.ToList();
-			}
-		}
+        // This will return a snapshot of the contents of the queue
+        // ReSharper disable once UnusedMember.Global
+        public virtual IEnumerable<MailMessage> ReceivedEmail => _receivedMail.ToList();
 
-		/// <summary>
+        /// <summary>
 		/// Erase list of received emails
 		/// </summary>
-		virtual public void ClearReceivedEmail()
+		public virtual void ClearReceivedEmail()
 		{
-		    MailMessage mailMessage;
-            while (_receivedMail.TryDequeue(out mailMessage)) {}
+            while (_receivedMail.TryDequeue(out _)) {}
 		}
 
 		/// <summary>
 		/// Number of messages received by this instance since start up.
 		/// </summary>
 		/// <value>Number of messages</value>
-		virtual public int ReceivedEmailCount
-		{
-			get
-			{
-				return _receivedMail.Count;
-			}
+        // ReSharper disable once UnusedMember.Global
+        public virtual int ReceivedEmailCount => _receivedMail.Count;
 
-		}
-		#endregion  // Properties
+        #endregion  // Properties
 
 		/// <summary>
 		/// Main loop of the SMTP server.
@@ -233,11 +205,8 @@ namespace nDumbsterCore.smtp
 					}
 					catch
 					{
-						if (socket != null)
-						{
-							socket.Close();
-						}
-						continue; // Non-blocking socket timeout occurred: try accept() again
+                        socket?.Close();
+                        continue; // Non-blocking socket timeout occurred: try accept() again
 					}
 
 					// Get the input and output streams
@@ -255,8 +224,7 @@ namespace nDumbsterCore.smtp
 			catch (Exception e)
 			{
 			    // Send exception back to calling thread
-			    var socketException = e as SocketException;
-                if (!(socketException != null && !socketException.Message.Contains("WSACancelBlockingCall")))
+                if (!(e is SocketException socketException && !socketException.Message.Contains("WSACancelBlockingCall")))
                 {
                     MainThreadException = e;
                 }
@@ -273,20 +241,16 @@ namespace nDumbsterCore.smtp
 					TcpListener = null;
 				}
 
-                if (HasStopped != null)
-                {
-                    HasStopped(this, new EventArgs());
-                }
-			}
+                HasStopped?.Invoke(this, new EventArgs());
+            }
 		}
 
-	    /// <summary>
-	    /// Handle an SMTP transaction, i.e. all activity between initial connect and QUIT command.
-	    /// </summary>
-	    /// <param name="output">output stream</param>
-	    /// <param name="input">input stream</param>
-	    /// <param name="messageQueue">The message queue to add any messages to</param>
-	    /// <returns>List of received SmtpMessages</returns>
+        /// <summary>
+        /// Handle an SMTP transaction, i.e. all activity between initial connect and QUIT command.
+        /// </summary>
+        /// <param name="output">output stream</param>
+        /// <param name="input">input stream</param>
+        /// <returns>List of received SmtpMessages</returns>
         private void HandleSmtpTransaction(StreamWriter output, TextReader input)
 		{
 			// Initialize the state machine
@@ -376,7 +340,8 @@ namespace nDumbsterCore.smtp
 		/// Creates and starts an instance of SimpleSmtpServer that will listen on the default port.
 		/// </summary>
 		/// <returns>The <see cref="SimpleSmtpServer">SmtpServer</see> waiting for message</returns>
-		public static SimpleSmtpServer Start()
+        // ReSharper disable once UnusedMember.Global
+        public static SimpleSmtpServer Start()
 		{
 			return Start(DEFAULT_SMTP_PORT);
 		}
@@ -391,9 +356,8 @@ namespace nDumbsterCore.smtp
 		{
 			SimpleSmtpServer server = new SimpleSmtpServer(port);
 
-			Thread smtpServerThread = new Thread(server.Run);
-            smtpServerThread.IsBackground = background;
-			smtpServerThread.Start();
+            Thread smtpServerThread = new Thread(server.Run) {IsBackground = background};
+            smtpServerThread.Start();
             
 			// Block until the server socket is created
 			try 

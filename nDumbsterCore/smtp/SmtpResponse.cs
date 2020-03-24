@@ -26,20 +26,8 @@ namespace nDumbsterCore.smtp
 	{
 
 		#region Members
-		/// <summary>
-		/// Response code - see RFC-2821. 
-		/// </summary>
-		private int code;
-		/// <summary>
-		/// Response message. 
-		/// </summary>
-		private string message;
-		/// <summary>
-		/// New state of the SMTP server once the request has been executed. 
-		/// </summary>
-		private SmtpState nextState;
 
-		#endregion // Members
+        #endregion // Members
 
 		#region Constructor
 		/// <summary>
@@ -50,9 +38,9 @@ namespace nDumbsterCore.smtp
 		/// <param name="next">next state of the SMTP server</param>
 		public SmtpResponse(int code, string message, SmtpState next)
 		{
-			this.code = code;
-			this.message = message;
-			this.nextState = next;
+			Code = code;
+			Message = message;
+			NextState = next;
 		}
 		#endregion // Constructor
 
@@ -60,37 +48,18 @@ namespace nDumbsterCore.smtp
 		/// <summary> 
 		/// Response code.
 		/// </summary>
-		virtual public int Code
-		{
-			get
-			{
-				return code;
-			}
+		public virtual int Code { get; }
 
-		}
-		/// <summary> 
+        /// <summary> 
 		/// Response message.
 		/// </summary>
-		virtual public string Message
-		{
-			get
-			{
-				return message;
-			}
+		public virtual string Message { get; }
 
-		}
-
-		/// <summary>
+        /// <summary>
 		/// Next SMTP server state.
 		/// </summary>
-		virtual public SmtpState NextState
-		{
-			get
-			{
-				return nextState;
-			}
+		public virtual SmtpState NextState { get; }
 
-		}
-		#endregion // Properties
+        #endregion // Properties
 	}
 }

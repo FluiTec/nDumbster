@@ -26,43 +26,43 @@ namespace nDumbsterCore.smtp
 	internal class SmtpState
 	{
 		/// <summary>Internal representation of the state. </summary>
-		private sbyte state;
+		private readonly sbyte _state;
 
 		/// <summary>Internal representation of the CONNECT state. </summary>
-		private const sbyte CONNECT_BYTE = 1;
+		private const sbyte ConnectByte = 1;
 		/// <summary>Internal representation of the GREET state. </summary>
-		private const sbyte GREET_BYTE = 2;
+		private const sbyte GreetByte = 2;
 		/// <summary>Internal representation of the MAIL state. </summary>
-		private const sbyte MAIL_BYTE = 3;
+		private const sbyte MailByte = 3;
 		/// <summary>Internal representation of the RCPT state. </summary>
-		private const sbyte RCPT_BYTE = 4;
+		private const sbyte RcptByte = 4;
 		/// <summary>Internal representation of the DATA_HEADER state. </summary>
-		private const sbyte DATA_HEADER_BYTE = 5;
+		private const sbyte DataHeaderByte = 5;
 		/// <summary>Internal representation of the DATA_BODY state. </summary>
-		private const sbyte DATA_BODY_BYTE = 6;
+		private const sbyte DataBodyByte = 6;
 		/// <summary>Internal representation of the QUIT state. </summary>
-		private const sbyte QUIT_BYTE = 7;
+		private const sbyte QuitByte = 7;
 
 		/// <summary>CONNECT state: waiting for a client connection. </summary>
-		public static readonly SmtpState CONNECT = new SmtpState(CONNECT_BYTE);
+		public static readonly SmtpState CONNECT = new SmtpState(ConnectByte);
 
 		/// <summary>GREET state: wating for a ELHO message. </summary>
-		public static readonly SmtpState GREET = new SmtpState(GREET_BYTE);
+		public static readonly SmtpState GREET = new SmtpState(GreetByte);
 
 		/// <summary>MAIL state: waiting for the MAIL FROM: command. </summary>
-		public static readonly SmtpState MAIL = new SmtpState(MAIL_BYTE);
+		public static readonly SmtpState MAIL = new SmtpState(MailByte);
 
 		/// <summary>RCPT state: waiting for a RCPT &lt;email address&gt; command. </summary>
-		public static readonly SmtpState RCPT = new SmtpState(RCPT_BYTE);
+		public static readonly SmtpState RCPT = new SmtpState(RcptByte);
 
 		/// <summary>Waiting for headers. </summary>
-		public static readonly SmtpState DATA_HDR = new SmtpState(DATA_HEADER_BYTE);
+		public static readonly SmtpState DATA_HDR = new SmtpState(DataHeaderByte);
 		
 		/// <summary>Processing body text. </summary>
-		public static readonly SmtpState DATA_BODY = new SmtpState(DATA_BODY_BYTE);
+		public static readonly SmtpState DATA_BODY = new SmtpState(DataBodyByte);
 
 		/// <summary>End of client transmission. </summary>
-		public static readonly SmtpState QUIT = new SmtpState(QUIT_BYTE);
+		public static readonly SmtpState QUIT = new SmtpState(QuitByte);
 
 		/// <summary>
 		/// Create a new SmtpState object. Private to ensure that only valid states can be created.
@@ -70,7 +70,7 @@ namespace nDumbsterCore.smtp
 		/// <param name="state">one of the _BYTE values.</param>
 		private SmtpState(sbyte state)
 		{
-			this.state = state;
+			_state = state;
 		}
 
 		/// <summary>
@@ -79,28 +79,28 @@ namespace nDumbsterCore.smtp
 		/// <returns>A String that represents the current SmtpState</returns>
 		public override string ToString()
 		{
-			switch (state)
+			switch (_state)
 			{
 
-				case CONNECT_BYTE:
+				case ConnectByte:
 					return "CONNECT";
 
-				case GREET_BYTE:
+				case GreetByte:
 					return "GREET";
 
-				case MAIL_BYTE:
+				case MailByte:
 					return "MAIL";
 
-				case RCPT_BYTE:
+				case RcptByte:
 					return "RCPT";
 
-				case DATA_HEADER_BYTE:
+				case DataHeaderByte:
 					return "DATA_HDR";
 
-				case DATA_BODY_BYTE:
+				case DataBodyByte:
 					return "DATA_BODY";
 
-				case QUIT_BYTE:
+				case QuitByte:
 					return "QUIT";
 
 				default:

@@ -1,4 +1,6 @@
-﻿using MailKit.Net.Smtp;
+﻿using System;
+using System.Linq;
+using MailKit.Net.Smtp;
 using MimeKit;
 using MimeKit.Text;
 using nDumbsterCore.smtp;
@@ -24,6 +26,12 @@ namespace nDumbsterCoreSample
                     Body = new TextPart(TextFormat.Plain)
                 });
             }
+            
+            Console.WriteLine($"Received mails on server: {server.ReceivedEmail.Count()}");
+            Console.WriteLine("Press <Enter> to quit.");
+            Console.ReadLine();
+
+            server.Stop();
         }
     }
 }

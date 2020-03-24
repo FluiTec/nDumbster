@@ -20,7 +20,7 @@ namespace nDumbsterCore.pop.Header
 		/// The date of this received line.
 		/// Is <see cref="DateTime.MinValue"/> if not present in the received header line.
 		/// </summary>
-		public DateTime Date { get; private set; }
+		public DateTime Date { get; }
 
 		/// <summary>
 		/// A dictionary that contains the names and values of the
@@ -36,12 +36,12 @@ namespace nDumbsterCore.pop.Header
 		/// then the dictionary will contain two keys: "from" and "by" with the values
 		/// "sending.com (localMachine [127.0.0.1])" and "test.net (Postfix)".
 		/// </example>
-		public Dictionary<string, string> Names { get; private set; }
+		public Dictionary<string, string> Names { get; }
 
 		/// <summary>
 		/// The raw input string that was parsed into this class.
 		/// </summary>
-		public string Raw { get; private set; }
+		public string Raw { get; }
 
 		/// <summary>
 		/// Parses a Received header value.
@@ -50,11 +50,8 @@ namespace nDumbsterCore.pop.Header
 		/// <exception cref="ArgumentNullException"><exception cref="ArgumentNullException">If <paramref name="headerValue"/> is <see langword="null"/></exception></exception>
 		public Received(string headerValue)
 		{
-			if (headerValue == null)
-				throw new ArgumentNullException("headerValue");
-
-			// Remember the raw input if someone whishes to use it
-			Raw = headerValue;
+            // Remember the raw input if someone whishes to use it
+			Raw = headerValue ?? throw new ArgumentNullException(nameof(headerValue));
 
 			// Default Date value
 			Date = DateTime.MinValue;
@@ -63,7 +60,7 @@ namespace nDumbsterCore.pop.Header
 			// Some emails forgets to specify the date, therefore we need to check if it is there
 			if(headerValue.Contains(";"))
 			{
-				string datePart = headerValue.Substring(headerValue.LastIndexOf(";") + 1);
+				string datePart = headerValue.Substring(headerValue.LastIndexOf(";", StringComparison.Ordinal) + 1);
 				Date = Rfc2822DateTime.StringToDate(datePart);
 			}
 
@@ -83,7 +80,7 @@ namespace nDumbsterCore.pop.Header
 			string headerValueWithoutDate = headerValue;
 			if (headerValue.Contains(";"))
 			{
-				headerValueWithoutDate = headerValue.Substring(0, headerValue.LastIndexOf(";"));
+				headerValueWithoutDate = headerValue.Substring(0, headerValue.LastIndexOf(";", StringComparison.Ordinal));
 			}
 
 			// Reduce any whitespace character to one space only

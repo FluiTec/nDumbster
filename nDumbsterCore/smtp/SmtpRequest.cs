@@ -51,39 +51,28 @@ namespace nDumbsterCore.smtp
 		/// <summary>
 		/// Parameters of this request (remainder of command line once the command is removed.
 		/// </summary>
-		virtual public string Params
-		{
-			get
-			{
-				return request_Params;
-			}
+		public virtual string Params { get; }
 
-		}
-
-		/// <summary>
+        /// <summary>
 		/// SMTP action received from client. 
 		/// </summary>
-		private SmtpActionType action;
+		private readonly SmtpActionType _action;
 		/// <summary>
 		/// Current state of the SMTP state table. 
 		/// </summary>
-		private SmtpState state;
-		/// <summary>
-		/// Additional information passed from the client with the SMTP action. 
-		/// </summary>
-		private string request_Params;
+		private readonly SmtpState _state;
 
-		/// <summary> 
+        /// <summary> 
 		/// Create a new SMTP client request.
 		/// </summary>
 		/// <param name="actionType">type of action/command</param>
-		/// <param name="request_Params">remainder of command line once command is removed</param>
+		/// <param name="requestParams">remainder of command line once command is removed</param>
 		/// <param name="state">current SMTP server state</param>
-		public SmtpRequest(SmtpActionType actionType, string request_Params, SmtpState state)
+		public SmtpRequest(SmtpActionType actionType, string requestParams, SmtpState state)
 		{
-			this.action = actionType;
-			this.state = state;
-			this.request_Params = request_Params;
+			_action = actionType;
+			_state = state;
+			Params = requestParams;
 		}
 
 		/// <summary> 
@@ -92,143 +81,109 @@ namespace nDumbsterCore.smtp
 		/// <returns>Reponse to the request</returns>
 		public virtual SmtpResponse Execute()
 		{
-			SmtpResponse response = null;
-			if (action.Stateless)
+            // ReSharper disable once RedundantAssignment
+            SmtpResponse response = null;
+			if (_action.Stateless)
 			{
-				if (SmtpActionType.EXPN == action || SmtpActionType.VRFY == action)
+				if (SmtpActionType.EXPN == _action || SmtpActionType.VRFY == _action)
 				{
-					response = new SmtpResponse(252, "Not supported", this.state);
+					response = new SmtpResponse(252, "Not supported", _state);
 				}
-				else if (SmtpActionType.HELP == action)
+				else if (SmtpActionType.HELP == _action)
 				{
-					response = new SmtpResponse(211, "No help available", this.state);
+					response = new SmtpResponse(211, "No help available", _state);
 				}
-				else if (SmtpActionType.NOOP == action)
+				else if (SmtpActionType.NOOP == _action)
 				{
-					response = new SmtpResponse(250, "OK", this.state);
+					response = new SmtpResponse(250, "OK", _state);
 				}
-				else if (SmtpActionType.VRFY == action)
+				else if (SmtpActionType.VRFY == _action)
 				{
-					response = new SmtpResponse(252, "Not supported", this.state);
+					response = new SmtpResponse(252, "Not supported", _state);
 				}
-				else if (SmtpActionType.RSET == action)
+				else if (SmtpActionType.RSET == _action)
 				{
 					response = new SmtpResponse(250, "OK", SmtpState.GREET);
 				}
 				else
 				{
-					response = new SmtpResponse(500, "Command not recognized", this.state);
+					response = new SmtpResponse(500, "Command not recognized", _state);
 				}
 			}
 			else
 			{
 				// Stateful commands
-				if (SmtpActionType.CONNECT == action)
+				if (SmtpActionType.CONNECT == _action)
+                {
+                    response = SmtpState.CONNECT == _state ? new SmtpResponse(220, "localhost nDumbster SMTP service ready", SmtpState.GREET) : new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
+                }
+				else if (SmtpActionType.EHLO == _action)
+                {
+                    response = SmtpState.GREET == _state ? new SmtpResponse(250, "OK", SmtpState.MAIL) : new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
+                }
+				else if (SmtpActionType.MAIL == _action)
 				{
-					if (SmtpState.CONNECT == state)
-					{
-						response = new SmtpResponse(220, "localhost nDumbster SMTP service ready", SmtpState.GREET);
-					}
-					else
-					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
-					}
-				}
-				else if (SmtpActionType.EHLO == action)
-				{
-					if (SmtpState.GREET == state)
-					{
-						response = new SmtpResponse(250, "OK", SmtpState.MAIL);
-					}
-					else
-					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
-					}
-				}
-				else if (SmtpActionType.MAIL == action)
-				{
-					if (SmtpState.MAIL == state || SmtpState.QUIT == state)
+					if (SmtpState.MAIL == _state || SmtpState.QUIT == _state)
 					{
 						response = new SmtpResponse(250, "OK", SmtpState.RCPT);
 					}
 					else
 					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
+						response = new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
 					}
 				}
-				else if (SmtpActionType.RCPT == action)
+				else if (SmtpActionType.RCPT == _action)
+                {
+                    response = SmtpState.RCPT == _state ? new SmtpResponse(250, "OK", _state) : new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
+                }
+				else if (SmtpActionType.DATA == _action)
+                {
+                    response = SmtpState.RCPT == _state ? new SmtpResponse(354, "Start mail input; end with <CRLF>.<CRLF>", SmtpState.DATA_HDR) : new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
+                }
+				else if (SmtpActionType.UNRECOG == _action)
 				{
-					if (SmtpState.RCPT == state)
+					if (SmtpState.DATA_HDR == _state || SmtpState.DATA_BODY == _state)
 					{
-						response = new SmtpResponse(250, "OK", this.state);
+						response = new SmtpResponse(-1, "", _state);
 					}
 					else
 					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
+						response = new SmtpResponse(500, "Command not recognized", _state);
 					}
 				}
-				else if (SmtpActionType.DATA == action)
+				else if (SmtpActionType.DATA_END == _action)
 				{
-					if (SmtpState.RCPT == state)
-					{
-						response = new SmtpResponse(354, "Start mail input; end with <CRLF>.<CRLF>", SmtpState.DATA_HDR);
-					}
-					else
-					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
-					}
-				}
-				else if (SmtpActionType.UNRECOG == action)
-				{
-					if (SmtpState.DATA_HDR == state || SmtpState.DATA_BODY == state)
-					{
-						response = new SmtpResponse(-1, "", this.state);
-					}
-					else
-					{
-						response = new SmtpResponse(500, "Command not recognized", this.state);
-					}
-				}
-				else if (SmtpActionType.DATA_END == action)
-				{
-					if (SmtpState.DATA_HDR == state || SmtpState.DATA_BODY == state)
+					if (SmtpState.DATA_HDR == _state || SmtpState.DATA_BODY == _state)
 					{
 						response = new SmtpResponse(250, "OK", SmtpState.QUIT);
 					}
 					else
 					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
+						response = new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
 					}
 				}
-				else if (SmtpActionType.BLANK_LINE == action)
+				else if (SmtpActionType.BLANK_LINE == _action)
 				{
-					if (SmtpState.DATA_HDR == state)
+					if (SmtpState.DATA_HDR == _state)
 					{
 						response = new SmtpResponse(-1, "", SmtpState.DATA_BODY);
 					}
-					else if (SmtpState.DATA_BODY == state)
+					else if (SmtpState.DATA_BODY == _state)
 					{
-						response = new SmtpResponse(-1, "", this.state);
+						response = new SmtpResponse(-1, "", _state);
 					}
 					else
 					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
+						response = new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
 					}
 				}
-				else if (SmtpActionType.QUIT == action)
-				{
-					if (SmtpState.QUIT == state)
-					{
-						response = new SmtpResponse(221, "localhost nDumbster service closing transmission channel", SmtpState.CONNECT);
-					}
-					else
-					{
-						response = new SmtpResponse(503, "Bad sequence of commands: " + action, this.state);
-					}
-				}
+				else if (SmtpActionType.QUIT == _action)
+                {
+                    response = SmtpState.QUIT == _state ? new SmtpResponse(221, "localhost nDumbster service closing transmission channel", SmtpState.CONNECT) : new SmtpResponse(503, "Bad sequence of commands: " + _action, _state);
+                }
 				else
 				{
-					response = new SmtpResponse(500, "Command not recognized", this.state);
+					response = new SmtpResponse(500, "Command not recognized", _state);
 				}
 			}
 			return response;
@@ -242,8 +197,9 @@ namespace nDumbsterCore.smtp
 		/// <returns>A populated SmtpRequest object</returns>
 		public static SmtpRequest CreateRequest(string s, SmtpState state)
 		{
-			SmtpActionType action = null;
-			string request_Params = null;
+            // ReSharper disable once RedundantAssignment
+            SmtpActionType action = null;
+			string requestParams = null;
 
 			if (state == SmtpState.DATA_HDR)
 			{
@@ -258,7 +214,7 @@ namespace nDumbsterCore.smtp
 				else
 				{
 					action = SmtpActionType.UNRECOG;
-					request_Params = s;
+					requestParams = s;
 				}
 			}
 			else if (state == SmtpState.DATA_BODY)
@@ -270,7 +226,7 @@ namespace nDumbsterCore.smtp
 				else
 				{
 					action = SmtpActionType.UNRECOG;
-					request_Params = s;
+					requestParams = s;
 				}
 			}
 			else
@@ -279,17 +235,17 @@ namespace nDumbsterCore.smtp
 				if (su.StartsWith("EHLO ") || su.StartsWith("HELO"))
 				{
 					action = SmtpActionType.EHLO;
-					request_Params = s.Substring(5);
+					requestParams = s.Substring(5);
 				}
 				else if (su.StartsWith("MAIL FROM:"))
 				{
 					action = SmtpActionType.MAIL;
-					request_Params = s.Substring(10);
+					requestParams = s.Substring(10);
 				}
 				else if (su.StartsWith("RCPT TO:"))
 				{
 					action = SmtpActionType.RCPT;
-					request_Params = s.Substring(8);
+					requestParams = s.Substring(8);
 				}
 				else if (su.StartsWith("DATA"))
 				{
@@ -325,7 +281,7 @@ namespace nDumbsterCore.smtp
 				}
 			}
 
-			SmtpRequest req = new SmtpRequest(action, request_Params, state);
+			SmtpRequest req = new SmtpRequest(action, requestParams, state);
 			return req;
 		}
 	}

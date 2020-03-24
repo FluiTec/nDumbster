@@ -22,7 +22,7 @@ namespace nDumbsterCore.pop.Decode
 		public static DateTime StringToDate(string inputDate)
 		{
 			if(inputDate == null)
-				throw new ArgumentNullException("inputDate");
+				throw new ArgumentNullException(nameof(inputDate));
 
 			// Old date specification allows comments and a lot of whitespace
 			inputDate = StripCommentsAndExcessWhitespace(inputDate);

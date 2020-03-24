@@ -30,7 +30,7 @@ namespace nDumbsterCore.pop
 	/// </example>
 	public class Message
 	{
-        private static Regex _trimEndRegex = new Regex(
+        private static readonly Regex TrimEndRegex = new Regex(
           "\\r\\n$",
         RegexOptions.CultureInvariant
         | RegexOptions.IgnorePatternWhitespace
@@ -42,20 +42,20 @@ namespace nDumbsterCore.pop
 		/// <summary>
 		/// Headers of the Message.
 		/// </summary>
-		public MessageHeader Headers { get; private set; }
+		public MessageHeader Headers { get; }
 
 		/// <summary>
 		/// This is the body of the email Message.<br/>
 		/// <br/>
 		/// If the body was parsed for this Message, this property will never be <see langword="null"/>.
 		/// </summary>
-		public MessagePart MessagePart { get; private set; }
+		public MessagePart MessagePart { get; }
 
 		/// <summary>
 		/// The raw content from which this message has been constructed.<br/>
 		/// These bytes can be persisted and later used to recreate the Message.
 		/// </summary>
-		public byte[] RawMessage { get; private set; }
+		public byte[] RawMessage { get; }
 		#endregion
 
 		#region Constructors
@@ -85,9 +85,7 @@ namespace nDumbsterCore.pop
 			RawMessage = rawMessageContent;
 
 			// Find the headers and the body parts of the byte array
-			MessageHeader headersTemp;
-			byte[] body;
-			HeaderExtractor.ExtractHeadersAndBody(rawMessageContent, out headersTemp, out body);
+            HeaderExtractor.ExtractHeadersAndBody(rawMessageContent, out var headersTemp, out var body);
 
 			// Set the Headers property
 			Headers = headersTemp;
@@ -132,17 +130,15 @@ namespace nDumbsterCore.pop
 		public MailMessage ToMailMessage()
 		{
 			// Construct an empty MailMessage to which we will gradually build up to look like the current Message object (this)
-			MailMessage message = new MailMessage();
+            MailMessage message = new MailMessage {Subject = Headers.Subject, SubjectEncoding = Encoding.UTF8};
 
-			message.Subject = Headers.Subject;
 
-			// We here set the encoding to be UTF-8
-			// We cannot determine what the encoding of the subject was at this point.
-			// But since we know that strings in .NET is stored in UTF, we can
-			// use UTF-8 to decode the subject into bytes
-			message.SubjectEncoding = Encoding.UTF8;
-			
-			// The HTML version should take precedent over the plain text if it is available
+            // We here set the encoding to be UTF-8
+            // We cannot determine what the encoding of the subject was at this point.
+            // But since we know that strings in .NET is stored in UTF, we can
+            // use UTF-8 to decode the subject into bytes
+
+            // The HTML version should take precedent over the plain text if it is available
 			MessagePart preferredVersion = FindFirstHtmlVersion();
 			if ( preferredVersion != null )
 			{
@@ -171,10 +167,11 @@ namespace nDumbsterCore.pop
 					continue;
 
 				MemoryStream stream = new MemoryStream(textVersion.Body);
-				AlternateView alternative = new AlternateView(stream);
-				alternative.ContentId = textVersion.ContentId;
-				alternative.ContentType = textVersion.ContentType;
-				message.AlternateViews.Add(alternative);
+                AlternateView alternative = new AlternateView(stream)
+                {
+                    ContentId = textVersion.ContentId, ContentType = textVersion.ContentType
+                };
+                message.AlternateViews.Add(alternative);
 			}
 
 			// Add attachments to the message
@@ -182,16 +179,18 @@ namespace nDumbsterCore.pop
 			foreach (MessagePart attachmentMessagePart in attachments)
 			{
 				MemoryStream stream = new MemoryStream(attachmentMessagePart.Body);
-				Attachment attachment = new Attachment(stream, attachmentMessagePart.ContentType);
-				attachment.ContentId = attachmentMessagePart.ContentId;
-			    message.Attachments.Add(attachment);
+                Attachment attachment = new Attachment(stream, attachmentMessagePart.ContentType)
+                {
+                    ContentId = attachmentMessagePart.ContentId
+                };
+                message.Attachments.Add(attachment);
 			}
 
 			if(Headers.From != null && Headers.From.HasValidMailAddress)
 				message.From = Headers.From.MailAddress;
 
 			if (Headers.ReplyTo != null && Headers.ReplyTo.HasValidMailAddress)
-				message.ReplyTo = Headers.ReplyTo.MailAddress;
+				message.ReplyToList.Add(Headers.ReplyTo.MailAddress);
 
 			if(Headers.Sender != null && Headers.Sender.HasValidMailAddress)
 				message.Sender = Headers.Sender.MailAddress;
@@ -214,7 +213,7 @@ namespace nDumbsterCore.pop
 					message.Bcc.Add(bcc.MailAddress);
 			}
 
-		    message.Body = _trimEndRegex.Replace(message.Body, "");
+		    message.Body = TrimEndRegex.Replace(message.Body, "");
 
 		    foreach (var headerKey in Headers.UnknownHeaders.AllKeys)
 		    {
@@ -309,7 +308,8 @@ namespace nDumbsterCore.pop
 		/// The order of the elements in the list is the order which they are found using
 		/// a depth first traversal of the <see cref="Message"/> hierarchy.
 		/// </returns>
-		public List<MessagePart> FindAllMessagePartsWithMediaType(string mediaType)
+        // ReSharper disable once UnusedMember.Global
+        public List<MessagePart> FindAllMessagePartsWithMediaType(string mediaType)
 		{
 			return new FindAllMessagePartsWithMediaType().VisitMessage(this, mediaType);
 		}
@@ -326,10 +326,11 @@ namespace nDumbsterCore.pop
 		/// <param name="file">The File location to save the <see cref="Message"/> to. Existent files will be overwritten.</param>
 		/// <exception cref="ArgumentNullException">If <paramref name="file"/> is <see langword="null"/></exception>
 		/// <exception>Other exceptions relevant to using a <see cref="FileStream"/> might be thrown as well</exception>
-		public void Save(FileInfo file)
+        // ReSharper disable once UnusedMember.Global
+        public void Save(FileInfo file)
 		{
 			if (file == null)
-				throw new ArgumentNullException("file");
+				throw new ArgumentNullException(nameof(file));
 
 			using (FileStream stream = new FileStream(file.FullName, FileMode.OpenOrCreate))
 			{
@@ -346,7 +347,7 @@ namespace nDumbsterCore.pop
 		public void Save(Stream messageStream)
 		{
 			if (messageStream == null)
-				throw new ArgumentNullException("messageStream");
+				throw new ArgumentNullException(nameof(messageStream));
 
 			messageStream.Write(RawMessage, 0, RawMessage.Length);
 		}
@@ -362,7 +363,7 @@ namespace nDumbsterCore.pop
 		public static Message Load(FileInfo file)
 		{
 			if (file == null)
-				throw new ArgumentNullException("file");
+				throw new ArgumentNullException(nameof(file));
 
 			if (!file.Exists)
 				throw new FileNotFoundException("Cannot load message from non-existent file", file.FullName);
@@ -384,7 +385,7 @@ namespace nDumbsterCore.pop
 		public static Message Load(Stream messageStream)
 		{
 			if (messageStream == null)
-				throw new ArgumentNullException("messageStream");
+				throw new ArgumentNullException(nameof(messageStream));
 
 			using (MemoryStream outStream = new MemoryStream())
 			{

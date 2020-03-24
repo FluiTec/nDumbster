@@ -17,7 +17,7 @@ namespace nDumbsterCore.pop.Decode
 		public static string RemoveQuotesIfAny(string text)
 		{
 			if(text == null)
-				throw new ArgumentNullException("text");
+				throw new ArgumentNullException(nameof(text));
 
 			// Check if there are qoutes at both ends
 			if(text[0] == '"' && text[text.Length-1] == '"')

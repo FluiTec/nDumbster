@@ -14,15 +14,9 @@ namespace nDumbsterCore.pop.Decode
 		/// <param name="base64Encoded">The string to decode</param>
 		/// <returns>A byte array that the base64 string described</returns>
 		public static byte[] Decode(string base64Encoded)
-		{
-			try
-			{
-				return Convert.FromBase64String(base64Encoded);
-			} catch (FormatException e)
-			{
-				throw;
-			}
-		}
+        {
+            return Convert.FromBase64String(base64Encoded);
+        }
 
 		/// <summary>
 		/// Decodes a Base64 encoded string using a specified <see cref="System.Text.Encoding"/> 
@@ -35,10 +29,10 @@ namespace nDumbsterCore.pop.Decode
 		public static string Decode(string base64Encoded, Encoding encoding)
 		{
 			if(base64Encoded == null)
-				throw new ArgumentNullException("base64Encoded");
+				throw new ArgumentNullException(nameof(base64Encoded));
 
 			if(encoding == null)
-				throw new ArgumentNullException("encoding");
+				throw new ArgumentNullException(nameof(encoding));
 
 			return encoding.GetString(Decode(base64Encoded));
 		}

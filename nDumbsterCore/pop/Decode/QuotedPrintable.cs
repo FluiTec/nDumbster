@@ -23,10 +23,10 @@ namespace nDumbsterCore.pop.Decode
 		public static string DecodeEncodedWord(string toDecode, Encoding encoding)
 		{
 			if (toDecode == null)
-				throw new ArgumentNullException("toDecode");
+				throw new ArgumentNullException(nameof(toDecode));
 
 			if (encoding == null)
-				throw new ArgumentNullException("encoding");
+				throw new ArgumentNullException(nameof(encoding));
 
 			// Decode the QuotedPrintable string and return it
 			return encoding.GetString(Rfc2047QuotedPrintableDecode(toDecode, true));
@@ -42,7 +42,7 @@ namespace nDumbsterCore.pop.Decode
 		public static byte[] DecodeContentTransferEncoding(string toDecode)
 		{
 			if (toDecode == null)
-				throw new ArgumentNullException("toDecode");
+				throw new ArgumentNullException(nameof(toDecode));
 
 			// Decode the QuotedPrintable string and return it
 			return Rfc2047QuotedPrintableDecode(toDecode, false);
@@ -65,7 +65,7 @@ namespace nDumbsterCore.pop.Decode
 		private static byte[] Rfc2047QuotedPrintableDecode(string toDecode, bool encodedWordVariant)
 		{
 			if (toDecode == null)
-				throw new ArgumentNullException("toDecode");
+				throw new ArgumentNullException(nameof(toDecode));
 
 			// Create a byte array builder which is roughly equivalent to a StringBuilder
 			using (MemoryStream byteArrayBuilder = new MemoryStream())
@@ -147,7 +147,7 @@ namespace nDumbsterCore.pop.Decode
 		private static string RemoveIllegalControlCharacters(string input)
 		{
 			if(input == null)
-				throw new ArgumentNullException("input");
+				throw new ArgumentNullException(nameof(input));
 
 			// First we remove any \r or \n which is not part of a \r\n pair
 			input = RemoveCarriageReturnAndNewLinewIfNotInPair(input);
@@ -169,7 +169,7 @@ namespace nDumbsterCore.pop.Decode
 		private static string RemoveCarriageReturnAndNewLinewIfNotInPair(string input)
 		{
 			if (input == null)
-				throw new ArgumentNullException("input");
+				throw new ArgumentNullException(nameof(input));
 
 			// Use this for building up the new string. This is used for performance instead
 			// of altering the input string each time a illegal token is found
@@ -231,15 +231,15 @@ namespace nDumbsterCore.pop.Decode
 		private static byte[] DecodeEqualSignNotLongEnough(string decode)
 		{
 			if (decode == null)
-				throw new ArgumentNullException("decode");
+				throw new ArgumentNullException(nameof(decode));
 
 			// We can only decode wrong length equal signs
 			if (decode.Length >= 3)
-				throw new ArgumentException("decode must have length lower than 3", "decode");
+				throw new ArgumentException("decode must have length lower than 3", nameof(decode));
 
 			// First char must be =
 			if (decode[0] != '=')
-				throw new ArgumentException("First part of decode must be an equal sign", "decode");
+				throw new ArgumentException("First part of decode must be an equal sign", nameof(decode));
 
 			// We will now believe that the string sent to us, was actually not encoded
 			// Therefore it must be in US-ASCII and we will return the bytes it corrosponds to
@@ -257,15 +257,15 @@ namespace nDumbsterCore.pop.Decode
 		private static byte[] DecodeEqualSign(string decode)
 		{
 			if (decode == null)
-				throw new ArgumentNullException("decode");
+				throw new ArgumentNullException(nameof(decode));
 
 			// We can only decode the string if it has length 3 - other calls to this function is invalid
 			if (decode.Length != 3)
-				throw new ArgumentException("decode must have length 3", "decode");
+				throw new ArgumentException("decode must have length 3", nameof(decode));
 
 			// First char must be =
 			if (decode[0] != '=')
-				throw new ArgumentException("decode must start with an equal sign", "decode");
+				throw new ArgumentException("decode must start with an equal sign", nameof(decode));
 
 			// There are two cases where an equal sign might appear
 			// It might be a

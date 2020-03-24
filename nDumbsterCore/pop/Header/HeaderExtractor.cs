@@ -49,7 +49,7 @@ namespace nDumbsterCore.pop.Header
 		public static void ExtractHeadersAndBody(byte[] fullRawMessage, out MessageHeader headers, out byte[] body)
 		{
 			if(fullRawMessage == null)
-				throw new ArgumentNullException("fullRawMessage");
+				throw new ArgumentNullException(nameof(fullRawMessage));
 
 			// Find the end location of the headers
 			int endOfHeaderLocation = FindHeaderEndPosition(fullRawMessage);
@@ -79,7 +79,7 @@ namespace nDumbsterCore.pop.Header
 		private static NameValueCollection ExtractHeaders(string messageContent)
 		{
 			if(messageContent == null)
-				throw new ArgumentNullException("messageContent");
+				throw new ArgumentNullException(nameof(messageContent));
 
 			NameValueCollection headers = new NameValueCollection();
 
@@ -158,7 +158,7 @@ namespace nDumbsterCore.pop.Header
 		internal static KeyValuePair<string, string> SeparateHeaderNameAndValue(string rawHeader)
 		{
 			if (rawHeader == null)
-				throw new ArgumentNullException("rawHeader");
+				throw new ArgumentNullException(nameof(rawHeader));
 
 			string key = string.Empty;
 			string value = string.Empty;

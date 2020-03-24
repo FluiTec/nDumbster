@@ -32,7 +32,7 @@ namespace nDumbsterCore.pop.Header
 		/// To: <c>Test</c><br/>
 		/// Address will be <see cref="string.Empty"/>.
 		///</example>
-		public string Address { get; private set; }
+		public string Address { get; }
 
 		///<summary>
 		/// The display name of this <see cref="RfcMailAddress"/><br/>
@@ -48,12 +48,12 @@ namespace nDumbsterCore.pop.Header
 		/// To: <c>test@test.com</c><br/>
 		/// DisplayName will be <see cref="string.Empty"/>
 		///</example>
-		public string DisplayName { get; private set; }
+		public string DisplayName { get; }
 
 		/// <summary>
 		/// This is the Raw string used to describe the <see cref="RfcMailAddress"/>.
 		/// </summary>
-		public string Raw { get; private set; }
+		public string Raw { get; }
 
 		/// <summary>
 		/// The <see cref="MailAddress"/> associated with the <see cref="RfcMailAddress"/>. 
@@ -62,16 +62,14 @@ namespace nDumbsterCore.pop.Header
 		/// The value of this property can be <see lanword="null"/> in instances where the <see cref="MailAddress"/> cannot represent the address properly.<br/>
 		/// Use <see cref="HasValidMailAddress"/> property to see if this property is valid.
 		/// </remarks>
-		public MailAddress MailAddress { get; private set; }
+		public MailAddress MailAddress { get; }
 
 		/// <summary>
 		/// Specifies if the object contains a valid <see cref="MailAddress"/> reference.
 		/// </summary>
-		public bool HasValidMailAddress
-		{
-			get { return MailAddress != null; }
-		}
-		#endregion
+		public bool HasValidMailAddress => MailAddress != null;
+
+        #endregion
 
 		#region Constructors
 		/// <summary>
@@ -83,16 +81,10 @@ namespace nDumbsterCore.pop.Header
 		/// <exception cref="ArgumentNullException">If <paramref name="mailAddress"/> or <paramref name="raw"/> is <see langword="null"/></exception>
 		private RfcMailAddress(MailAddress mailAddress, string raw)
 		{
-			if (mailAddress == null)
-				throw new ArgumentNullException("mailAddress");
-
-			if(raw == null)
-				throw new ArgumentNullException("raw");
-
-			MailAddress = mailAddress;
+            MailAddress = mailAddress ?? throw new ArgumentNullException(nameof(mailAddress));
 			Address = mailAddress.Address;
 			DisplayName = mailAddress.DisplayName;
-			Raw = raw;
+			Raw = raw ?? throw new ArgumentNullException(nameof(raw));
 		}
 
 		/// <summary>
@@ -103,12 +95,9 @@ namespace nDumbsterCore.pop.Header
 		/// <exception cref="ArgumentNullException">If <paramref name="raw"/> is <see langword="null"/></exception>
 		private RfcMailAddress(string raw)
 		{
-			if(raw == null)
-				throw new ArgumentNullException("raw");
-
-			MailAddress = null;
+            MailAddress = null;
 			Address = string.Empty;
-			DisplayName = raw;
+			DisplayName = raw ?? throw new ArgumentNullException(nameof(raw));
 			Raw = raw;
 		}
 		#endregion
@@ -147,7 +136,7 @@ namespace nDumbsterCore.pop.Header
 		internal static RfcMailAddress ParseMailAddress(string input)
 		{
 			if (input == null)
-				throw new ArgumentNullException("input");
+				throw new ArgumentNullException(nameof(input));
 
 			// Decode the value, if it was encoded
 			input = EncodedWord.Decode(input.Trim());
@@ -160,18 +149,8 @@ namespace nDumbsterCore.pop.Header
 			{
 				if (indexStartEmail >= 0 && indexEndEmail >= 0)
 				{
-					string username;
-					// Check if there is a username in front of the email address
-					if (indexStartEmail > 0)
-					{
-						// Parse out the user
-						username = input.Substring(0, indexStartEmail).Trim();
-					}
-					else
-					{
-						// There was no user
-						username = string.Empty;
-					}
+                    // Check if there is a username in front of the email address
+					var username = indexStartEmail > 0 ? input.Substring(0, indexStartEmail).Trim() : string.Empty;
 
 					// Parse out the email address without the "<"  and ">"
 					indexStartEmail = indexStartEmail + 1;
@@ -214,7 +193,7 @@ namespace nDumbsterCore.pop.Header
 		internal static List<RfcMailAddress> ParseMailAddresses(string input)
 		{
 			if (input == null)
-				throw new ArgumentNullException("input");
+				throw new ArgumentNullException(nameof(input));
 
 			List<RfcMailAddress> returner = new List<RfcMailAddress>();
 

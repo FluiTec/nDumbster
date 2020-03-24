@@ -23,7 +23,7 @@ namespace nDumbsterCore.pop.Traverse
 		public List<MessagePart> VisitMessage(Message message, string question)
 		{
 			if(message == null)
-				throw new ArgumentNullException("message");
+				throw new ArgumentNullException(nameof(message));
 
 			return VisitMessagePart(message.MessagePart, question);
 		}
@@ -43,7 +43,7 @@ namespace nDumbsterCore.pop.Traverse
 		public List<MessagePart> VisitMessagePart(MessagePart messagePart, string question)
 		{
 			if(messagePart == null)
-				throw new ArgumentNullException("messagePart");
+				throw new ArgumentNullException(nameof(messagePart));
 
 			List<MessagePart> results = new List<MessagePart>();
 

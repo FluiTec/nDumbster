@@ -89,14 +89,14 @@ namespace nDumbsterCore.pop
 		/// <br/>
 		/// If set, the default is overridden.
 		/// </summary>
-		public ContentType ContentType { get; private set; }
+		public ContentType ContentType { get; }
 
 		/// <summary>
 		/// A human readable description of the body<br/>
 		/// <br/>
 		/// <see langword="null"/> if no Content-Description header was present in the message.<br/>
 		/// </summary>
-		public string ContentDescription { get; private set; }
+		public string ContentDescription { get; }
 
 		/// <summary>
 		/// This header describes the Content encoding during transfer.<br/>
@@ -105,14 +105,14 @@ namespace nDumbsterCore.pop
 		/// to the default of <see cref="Header.ContentTransferEncoding.SevenBit">SevenBit</see> in accordance to the RFC.
 		/// </summary>
 		/// <remarks>See <a href="http://tools.ietf.org/html/rfc2045#section-6">RFC 2045 section 6</a> for details</remarks>
-		public ContentTransferEncoding ContentTransferEncoding { get; private set; }
+		public ContentTransferEncoding ContentTransferEncoding { get; }
 
 		/// <summary>
 		/// ID of the content part (like an attached image). Used with MultiPart messages.<br/>
 		/// <br/>
 		/// <see langword="null"/> if no Content-ID header field was present in the message.
 		/// </summary>
-		public string ContentId { get; private set; }
+		public string ContentId { get; }
 
 		/// <summary>
 		/// Used to describe if a <see cref="MessagePart"/> is to be displayed or to be though of as an attachment.<br/>
@@ -120,13 +120,13 @@ namespace nDumbsterCore.pop
 		/// <br/>
 		/// <see langword="null"/> if no Content-Disposition header field was present in the message
 		/// </summary>
-		public ContentDisposition ContentDisposition { get; private set; }
+		public ContentDisposition ContentDisposition { get; }
 
 		/// <summary>
 		/// This is the encoding used to parse the message body if the <see cref="MessagePart"/><br/>
 		/// is not a MultiPart message. It is derived from the <see cref="ContentType"/> character set property.
 		/// </summary>
-		public Encoding BodyEncoding { get; private set; }
+		public Encoding BodyEncoding { get; }
 
 		/// <summary>
 		/// This is the parsed body of this <see cref="MessagePart"/>.<br/>
@@ -143,15 +143,9 @@ namespace nDumbsterCore.pop
 		/// <br/>
 		/// The <see cref="MessagePart"/> is a MultiPart message if the <see cref="ContentType"/> media type property starts with "multipart/"
 		/// </summary>
-		public bool IsMultiPart
-		{
-			get
-			{
-				return ContentType.MediaType.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase);
-			}
-		}
+		public bool IsMultiPart => ContentType.MediaType.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase);
 
-		/// <summary>
+        /// <summary>
 		/// A <see cref="MessagePart"/> is considered to be holding text in it's body if the MediaType
 		/// starts either "text/" or is equal to "message/rfc822"
 		/// </summary>
@@ -170,23 +164,17 @@ namespace nDumbsterCore.pop
 		/// or<br/>
 		/// - it has a Content-Disposition header that says it is an attachment
 		/// </summary>
-		public bool IsAttachment
-		{
-			get
-			{
-				// Inline is the opposite of attachment
-				return (!IsText && !IsMultiPart) || (ContentDisposition != null && !ContentDisposition.Inline);
-			}
-		}
+        // Inline is the opposite of attachment
+        public bool IsAttachment => (!IsText && !IsMultiPart) || (ContentDisposition != null && !ContentDisposition.Inline);
 
-		/// <summary>
+        /// <summary>
 		/// This is a convenient-property for figuring out a FileName for this <see cref="MessagePart"/>.<br/>
 		/// If the <see cref="MessagePart"/> is a MultiPart message, then it makes no sense to try to find a FileName.<br/>
 		/// <br/>
 		/// The FileName can be specified in the <see cref="ContentDisposition"/> or in the <see cref="ContentType"/> properties.<br/>
 		/// If none of these places two places tells about the FileName, a default "(no name)" is returned.
 		/// </summary>
-		public string FileName { get; private set; }
+		public string FileName { get; }
 
 		/// <summary>
 		/// If this <see cref="MessagePart"/> is a MultiPart message, then this property
@@ -208,10 +196,10 @@ namespace nDumbsterCore.pop
 		internal MessagePart(byte[] rawBody, MessageHeader headers)
 		{
 			if(rawBody == null)
-				throw new ArgumentNullException("rawBody");
+				throw new ArgumentNullException(nameof(rawBody));
 			
 			if(headers == null)
-				throw new ArgumentNullException("headers");
+				throw new ArgumentNullException(nameof(headers));
 
 			ContentType = headers.ContentType;
 			ContentDescription = headers.ContentDescription;
@@ -257,9 +245,9 @@ namespace nDumbsterCore.pop
 		private static string FindFileName(ContentType contentType, ContentDisposition contentDisposition, string defaultName)
 		{
 			if(contentType == null)
-				throw new ArgumentNullException("contentType");
+				throw new ArgumentNullException(nameof(contentType));
 
-			if (contentDisposition != null && contentDisposition.FileName != null)
+			if (contentDisposition?.FileName != null)
 				return contentDisposition.FileName;
 
 			if (contentType.Name != null)
@@ -320,9 +308,7 @@ namespace nDumbsterCore.pop
 		private static MessagePart GetMessagePart(byte[] rawMessageContent)
 		{
 			// Find the headers and the body parts of the byte array
-			MessageHeader headers;
-			byte[] body;
-			HeaderExtractor.ExtractHeadersAndBody(rawMessageContent, out headers, out body);
+            HeaderExtractor.ExtractHeadersAndBody(rawMessageContent, out var headers, out var body);
 
 			// Create a new MessagePart from the headers and the body
 			return new MessagePart(body, headers);
@@ -342,12 +328,10 @@ namespace nDumbsterCore.pop
 			// Create a stream from which we can find MultiPart boundaries
 			using (MemoryStream stream = new MemoryStream(rawBody))
 			{
-				bool lastMultipartBoundaryEncountered;
-
-				// Find the start of the first message in this multipart
+                // Find the start of the first message in this multipart
 				// Since the method returns the first character on a the line containing the MultiPart boundary, we
 				// need to add the MultiPart boundary with prepended "--" and appended CRLF pair to the position returned.
-				int startLocation = FindPositionOfNextMultiPartBoundary(stream, multipPartBoundary, out lastMultipartBoundaryEncountered) + ("--" + multipPartBoundary + "\r\n").Length;
+				int startLocation = FindPositionOfNextMultiPartBoundary(stream, multipPartBoundary, out var lastMultipartBoundaryEncountered) + ("--" + multipPartBoundary + "\r\n").Length;
 				while (true)
 				{
 					// When we have just parsed the last multipart entry, stop parsing on
@@ -441,7 +425,7 @@ namespace nDumbsterCore.pop
 		private static byte[] DecodeBody(byte[] messageBody, ContentTransferEncoding contentTransferEncoding)
 		{
 			if (messageBody == null)
-				throw new ArgumentNullException("messageBody");
+				throw new ArgumentNullException(nameof(messageBody));
 
 			switch (contentTransferEncoding)
 			{
@@ -460,7 +444,7 @@ namespace nDumbsterCore.pop
 					return messageBody;
 
 				default:
-					throw new ArgumentOutOfRangeException("contentTransferEncoding");
+					throw new ArgumentOutOfRangeException(nameof(contentTransferEncoding));
 			}
 		}
 		#endregion
@@ -484,10 +468,11 @@ namespace nDumbsterCore.pop
 		/// <param name="file">The File location to save the <see cref="MessagePart"/> to. Existent files will be overwritten.</param>
 		/// <exception cref="ArgumentNullException">If <paramref name="file"/> is <see langword="null"/></exception>
 		/// <exception>Other exceptions relevant to using a <see cref="FileStream"/> might be thrown as well</exception>
-		public void Save(FileInfo file)
+        // ReSharper disable once UnusedMember.Global
+        public void Save(FileInfo file)
 		{
 			if (file == null)
-				throw new ArgumentNullException("file");
+				throw new ArgumentNullException(nameof(file));
 
 			using (FileStream stream = new FileStream(file.FullName, FileMode.OpenOrCreate))
 			{
@@ -504,7 +489,7 @@ namespace nDumbsterCore.pop
 		public void Save(Stream messageStream)
 		{
 			if (messageStream == null)
-				throw new ArgumentNullException("messageStream");
+				throw new ArgumentNullException(nameof(messageStream));
 
 			messageStream.Write(Body, 0, Body.Length);
 		}

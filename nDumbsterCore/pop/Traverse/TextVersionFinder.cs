@@ -11,7 +11,7 @@ namespace nDumbsterCore.pop.Traverse
 		protected override List<MessagePart> CaseLeaf(MessagePart messagePart)
 		{
 			if(messagePart == null)
-				throw new ArgumentNullException("messagePart");
+				throw new ArgumentNullException(nameof(messagePart));
 
 			// Maximum space needed is one
 			List<MessagePart> leafAnswer = new List<MessagePart>(1);

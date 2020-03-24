@@ -72,7 +72,7 @@ namespace nDumbsterCore.pop.Decode
 		public static List<KeyValuePair<string, string>> Decode(string toDecode)
 		{
 			if(toDecode == null)
-				throw new ArgumentNullException("toDecode");
+				throw new ArgumentNullException(nameof(toDecode));
 
 			// Normalize the input to take account for missing semicolons after parameters.
 			// Example
@@ -131,7 +131,7 @@ namespace nDumbsterCore.pop.Decode
 		private static List<KeyValuePair<string, string>> DecodePairs(List<KeyValuePair<string, string>> pairs)
 		{
 			if(pairs == null)
-				throw new ArgumentNullException("pairs");
+				throw new ArgumentNullException(nameof(pairs));
 
 			List<KeyValuePair<string, string>> resultPairs = new List<KeyValuePair<string, string>>(pairs.Count);
 
@@ -235,8 +235,7 @@ namespace nDumbsterCore.pop.Decode
 					key = key.Replace("*", "");
 
 					// Decode the value
-					string throwAway;
-					value = DecodeSingleValue(value, out throwAway);
+                    value = DecodeSingleValue(value, out _);
 
 					// Now input the new value with the new key
 					resultPairs.Add(new KeyValuePair<string, string>(key, value));
@@ -273,7 +272,7 @@ namespace nDumbsterCore.pop.Decode
 		private static string DecodeSingleValue(string toDecode, out string encodingUsed)
 		{
 			if(toDecode == null)
-				throw new ArgumentNullException("toDecode");
+				throw new ArgumentNullException(nameof(toDecode));
 
 			// Check if input has a part describing the encoding
 			if (toDecode.IndexOf('\'') == -1)
@@ -299,10 +298,10 @@ namespace nDumbsterCore.pop.Decode
 		private static string DecodeSingleValue(string valueToDecode, string encoding)
 		{
 			if(valueToDecode == null)
-				throw new ArgumentNullException("valueToDecode");
+				throw new ArgumentNullException(nameof(valueToDecode));
 
 			if(encoding == null)
-				throw new ArgumentNullException("encoding");
+				throw new ArgumentNullException(nameof(encoding));
 
 			// The encoding used is the same as QuotedPrintable, we only
 			// need to change % to =

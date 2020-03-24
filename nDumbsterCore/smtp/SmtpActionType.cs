@@ -31,116 +31,116 @@ namespace nDumbsterCore.smtp
 		/// <summary>
 		/// Internal representation of the CONNECT action.
 		///  </summary>
-		private const sbyte CONNECT_BYTE = 1;
+		private const sbyte ConnectByte = 1;
 		/// <summary>
 		/// Internal representation of the EHLO action. 
 		/// </summary>
-		private const sbyte EHLO_BYTE = 2;
+		private const sbyte EhloByte = 2;
 		/// <summary>
 		/// Internal representation of the MAIL FROM action. 
 		/// </summary>
-		private const sbyte MAIL_BYTE = 3;
+		private const sbyte MailByte = 3;
 		/// <summary>
 		/// Internal representation of the RCPT action.
 		///  </summary>
-		private const sbyte RCPT_BYTE = 4;
+		private const sbyte RcptByte = 4;
 		/// <summary>
 		/// Internal representation of the DATA action.
 		/// </summary>
-		private const sbyte DATA_BYTE = 5;
+		private const sbyte DataByte = 5;
 		/// <summary>
 		/// Internal representation of the DATA END (.) action.
 		/// </summary>
-		private const sbyte DATA_END_BYTE = 6;
+		private const sbyte DataEndByte = 6;
 		/// <summary>Internal representation of the QUIT action. </summary>
-		private const sbyte QUIT_BYTE = 7;
+		private const sbyte QuitByte = 7;
 		/// <summary>
 		/// Internal representation of an unrecognized action: body text gets this action type.
 		/// </summary>
-		private const sbyte UNREC_BYTE = 8;
+		private const sbyte UnrecByte = 8;
 		/// <summary>
 		/// Internal representation of the blank line action: separates headers and body text.
 		/// </summary>
-		private const sbyte BLANK_LINE_BYTE = 9;
+		private const sbyte BlankLineByte = 9;
 
 		/// <summary>
 		/// Internal representation of the stateless RSET action.
 		/// </summary>
-		private const sbyte RSET_BYTE = -1;
+		private const sbyte RsetByte = -1;
 		/// <summary>
 		/// Internal representation of the stateless VRFY action.
 		/// </summary>
-		private const sbyte VRFY_BYTE = -2;
+		private const sbyte VrfyByte = -2;
 		/// <summary>
 		/// Internal representation of the stateless EXPN action.
 		/// </summary>
-		private const sbyte EXPN_BYTE = -3;
+		private const sbyte ExpnByte = -3;
 		/// <summary>
 		/// Internal representation of the stateless HELP action.
 		/// </summary>
-		private const sbyte HELP_BYTE = -4;
+		private const sbyte HelpByte = -4;
 		/// <summary>
 		/// Internal representation of the stateless NOOP action.
 		/// </summary>
-		private const sbyte NOOP_BYTE = -5;
+		private const sbyte NoopByte = -5;
 
 		/// <summary>
 		/// CONNECT action.
 		/// </summary>
-		public static readonly SmtpActionType CONNECT = new SmtpActionType(CONNECT_BYTE);
+		public static readonly SmtpActionType CONNECT = new SmtpActionType(ConnectByte);
 		/// <summary>
 		/// EHLO action.
 		/// </summary>
-		public static readonly SmtpActionType EHLO = new SmtpActionType(EHLO_BYTE);
+		public static readonly SmtpActionType EHLO = new SmtpActionType(EhloByte);
 		/// <summary>
 		/// MAIL action.
 		/// </summary>
-		public static readonly SmtpActionType MAIL = new SmtpActionType(MAIL_BYTE);
+		public static readonly SmtpActionType MAIL = new SmtpActionType(MailByte);
 		/// <summary>
 		/// RCPT action.
 		/// </summary>
-		public static readonly SmtpActionType RCPT = new SmtpActionType(RCPT_BYTE);
+		public static readonly SmtpActionType RCPT = new SmtpActionType(RcptByte);
 		/// <summary>
 		/// DATA action.
 		/// </summary>
-		public static readonly SmtpActionType DATA = new SmtpActionType(DATA_BYTE);
+		public static readonly SmtpActionType DATA = new SmtpActionType(DataByte);
 		/// <summary>
 		/// "." action.
 		/// </summary>
-		public static readonly SmtpActionType DATA_END = new SmtpActionType(DATA_END_BYTE);
+		public static readonly SmtpActionType DATA_END = new SmtpActionType(DataEndByte);
 		/// <summary>
 		/// Body text action.
 		/// </summary>
-		public static readonly SmtpActionType UNRECOG = new SmtpActionType(UNREC_BYTE);
+		public static readonly SmtpActionType UNRECOG = new SmtpActionType(UnrecByte);
 		/// <summary>
 		/// QUIT action.
 		/// </summary>
-		public static readonly SmtpActionType QUIT = new SmtpActionType(QUIT_BYTE);
+		public static readonly SmtpActionType QUIT = new SmtpActionType(QuitByte);
 		/// <summary>
 		/// Header/body separator action.
 		/// </summary>
-		public static readonly SmtpActionType BLANK_LINE = new SmtpActionType(BLANK_LINE_BYTE);
+		public static readonly SmtpActionType BLANK_LINE = new SmtpActionType(BlankLineByte);
 
 		/// <summary>
 		/// Stateless RSET action.
 		/// </summary>
-		public static readonly SmtpActionType RSET = new SmtpActionType(RSET_BYTE);
+		public static readonly SmtpActionType RSET = new SmtpActionType(RsetByte);
 		/// <summary>
 		/// Stateless VRFY action. 
 		/// </summary>
-		public static readonly SmtpActionType VRFY = new SmtpActionType(VRFY_BYTE);
+		public static readonly SmtpActionType VRFY = new SmtpActionType(VrfyByte);
 		/// <summary>
 		/// Stateless EXPN action. 
 		/// </summary>
-		public static readonly SmtpActionType EXPN = new SmtpActionType(EXPN_BYTE);
+		public static readonly SmtpActionType EXPN = new SmtpActionType(ExpnByte);
 		/// <summary>
 		/// Stateless HELP action. 
 		/// </summary>
-		public static readonly SmtpActionType HELP = new SmtpActionType(HELP_BYTE);
+		public static readonly SmtpActionType HELP = new SmtpActionType(HelpByte);
 		/// <summary>
 		/// Stateless NOOP action. 
 		/// </summary>
-		public static readonly SmtpActionType NOOP = new SmtpActionType(NOOP_BYTE);
+		public static readonly SmtpActionType NOOP = new SmtpActionType(NoopByte);
 
 		#endregion // Members
 
@@ -151,7 +151,7 @@ namespace nDumbsterCore.smtp
 		/// <param name="action">one of the _BYTE values</param>
 		private SmtpActionType(sbyte action)
 		{
-			this._action = action;
+			_action = action;
 		}
 		#endregion // Constructors
 
@@ -159,15 +159,9 @@ namespace nDumbsterCore.smtp
 		/// <summary>
 		/// Indicates whether the action is stateless or not.
 		/// </summary>
-		virtual public bool Stateless
-		{
-			get
-			{
-				return _action < 0;
-			}
+		public virtual bool Stateless => _action < 0;
 
-		}
-		#endregion // Properties
+        #endregion // Properties
 
 		/// <summary> 
 		/// String representation of this SMTP action type.
@@ -179,46 +173,46 @@ namespace nDumbsterCore.smtp
 			switch (_action)
 			{
 
-				case CONNECT_BYTE:
+				case ConnectByte:
 					return "Connect";
 
-				case EHLO_BYTE:
+				case EhloByte:
 					return "EHLO";
 
-				case MAIL_BYTE:
+				case MailByte:
 					return "MAIL";
 
-				case RCPT_BYTE:
+				case RcptByte:
 					return "RCPT";
 
-				case DATA_BYTE:
+				case DataByte:
 					return "DATA";
 
-				case DATA_END_BYTE:
+				case DataEndByte:
 					return ".";
 
-				case QUIT_BYTE:
+				case QuitByte:
 					return "QUIT";
 
-				case RSET_BYTE:
+				case RsetByte:
 					return "RSET";
 
-				case VRFY_BYTE:
+				case VrfyByte:
 					return "VRFY";
 
-				case EXPN_BYTE:
+				case ExpnByte:
 					return "EXPN";
 
-				case HELP_BYTE:
+				case HelpByte:
 					return "HELP";
 
-				case NOOP_BYTE:
+				case NoopByte:
 					return "NOOP";
 
-				case UNREC_BYTE:
+				case UnrecByte:
 					return "Unrecognized command / data";
 
-				case BLANK_LINE_BYTE:
+				case BlankLineByte:
 					return "Blank line";
 
 				default:
