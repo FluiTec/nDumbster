@@ -21,7 +21,7 @@ namespace nDumbsterCoreSample
                 client.Send(new MimeMessage
                 {
                     From = { new MailboxAddress("Test", "test@example.com") },
-                    To = { new MailboxAddress("test@example.com", "Test") },
+                    To = { new MailboxAddress("Test", "test@example.com") },
                     Subject = "Subject",
                     Body = new TextPart(TextFormat.Plain)
                 });
